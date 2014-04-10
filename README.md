@@ -5,6 +5,17 @@ Add handlers for using .xlsx files as sources for Migrate module
 
 ============
 
+@TODO: write tests for source classes
+
+============
+
+Known issues:
+
+- Simple XLSX library can open only documents saved with Microsoft Office.
+Documents saved with Open Office and Neo Office will not work
+
+============
+
 Based on the library "Simple XLSX: Parse and retrieve data from Excel XLS files"
 by Sergey Shuchkin.
 
