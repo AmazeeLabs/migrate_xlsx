@@ -1,0 +1,8 @@
+name = Migrate XLSX
+description = Adds support for using XLSX document as sources for Migrate module
+core = 7.x
+package = "Migration"
+
+dependencies[] = migrate
+
+files[] =
