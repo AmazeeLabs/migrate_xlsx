@@ -82,12 +82,12 @@ class Excel2007Source extends MigrateSource {
    * Each function should have one parameter passed by reference and can do any
    * changes on it.
    *
-   * Tipical use of this is to create custom source keys. For example when some
+   * Typical use of this is to create custom source keys. For example when some
    * of the records use A column as source key and others use B. prepareRow() is
    * not called inside MigrateSource::next() and they can be skipped before
    * prepareRow() is called.
    *
-   * This callbacks are called even if $reuseValues is set to FALSE.
+   * This callbacks is called even if $reuseValues is set to FALSE.
    *
    * @see __construct()
    * @see rawLineAlter()
@@ -107,6 +107,9 @@ class Excel2007Source extends MigrateSource {
    *  Optional - keys are field names, values are descriptions. Use to override
    *  the default descriptions, or to add additional source fields which the
    *  migration will add via other means (e.g., prepareRow()).
+   *
+   * @throws Exception
+   *   When library class SimpleXLSX is missing or the file does not exist
    */
   public function __construct($path, array $columns = array(), array $options = array(), array $fields = array()) {
     parent::__construct($options);
@@ -140,16 +143,7 @@ class Excel2007Source extends MigrateSource {
 
     // Create XLSX document handler
     if (!class_exists('SimpleXLSX')) {
-      // This doesn't work inside test script. Investigate and maybe improve libraries support by
-      // defining library inside this module
-      //$library_path = module_invoke('libraries', 'get_path', 'simple-xlsx') . '/simplexlsx.class.php';
-      $library_path = 'sites/all/libraries/simple-xlsx/simplexlsx.class.php';
-      if (file_exists($library_path)) {
-        include_once $library_path;
-      }
-      else {
-        throw new Exception(t('SimpleXLSX library could not be found at: ' . $library_path . '!'));
-      }
+       throw new Exception(t('SimpleXLSX library could not be found at!'));
     }
 
     if (file_exists(drupal_realpath($path))) {
@@ -197,7 +191,7 @@ class Excel2007Source extends MigrateSource {
 
   public function fields() {
     $fields = array();
-    // the ones readed from file
+    // the ones read from file
     if (count($this->columns)) {
       foreach($this->columns as $name => $description) {
         $fields[$name] = $description;

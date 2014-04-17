@@ -23,6 +23,9 @@ class Excel2007SourceSplit extends XlsxSource {
    */
   protected $original_row = NULL;
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct($path, array $columns = array(), array $options = array(), array $fields = array()) {
     if (isset($options['raw_line_alter']) && is_array($options['raw_line_alter'])) {
       // These callbacks will be called from getNextRow by this class
