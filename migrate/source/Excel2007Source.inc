@@ -357,9 +357,20 @@ class Excel2007Source extends MigrateSource {
   }
 
   /**
-   * Check if an cell is empty
+   * Checks if a cell is no empty
+   *
+   * @param mixed $cell
+   *  Cell content
+   *
+   * @return bool
+   *  TRUE if the cell contains a value or FALSE if cell contains nothing,
+   *  white spaces only of NA() / #N/A value
    */
-  private function emptyCell($cell) {
+  private function notEmptyCell($cell) {
+    // Not available should be returned as empty
+    if ($cell == '#N/A') {
+      return true;
+    }
     $c = trim($cell);
     return !empty($c);
   }
@@ -374,7 +385,7 @@ class Excel2007Source extends MigrateSource {
    *   TRUE if the row contains only empty cells or FALSE otherwise
    */
   private function isEmptyRow($row) {
-    return count(array_filter($row, array($this, 'emptyCell'))) == 0;
+    return count(array_filter($row, array($this, 'notEmptyCell'))) == 0;
   }
 
   /**
