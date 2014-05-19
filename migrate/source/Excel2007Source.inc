@@ -74,6 +74,13 @@ class Excel2007Source extends MigrateSource {
   protected $reuseAlterCallbacks = array();
 
   /**
+   * Excel error messages that are going to be suppressed
+   *
+   * @var array
+   */
+  protected $excelErrorsToSuppress = array();
+
+  /**
    * Raw line alter callbacks
    *
    * Functions called just after the line reading from xls document, after
@@ -93,6 +100,11 @@ class Excel2007Source extends MigrateSource {
    * @see rawLineAlter()
    */
   protected $rawLineAlterCallbacks = array();
+
+  /**
+   * @var stdClass
+   */
+  protected $previousRow = null;
 
   /**
    * Simple initialization.
@@ -141,6 +153,11 @@ class Excel2007Source extends MigrateSource {
 
     $this->fields = $fields;
 
+    $this->excelErrorsToSuppress = self::getDefaultErrorsToSuppress();
+    if (isset($options['errors_to_suppress'])) {
+      $this->excelErrorsToSuppress = $options['errors_to_suppress'];
+    }
+
     // Create XLSX document handler
     if (!class_exists('SimpleXLSX')) {
        throw new Exception(t('SimpleXLSX library could not be found at!'));
@@ -165,6 +182,27 @@ class Excel2007Source extends MigrateSource {
     foreach($columns as $name => $description) {
       $this->columns[$name] = $description;
     }
+  }
+
+  /**
+   * Returns the list with default errors to suppress from the cells
+   *
+   * @link http://spreadsheets.about.com/od/excel101/tp/090916-excel-error-message-hub.htm
+   * @link http://chandoo.org/wp/2009/04/20/excel-formula-errors/
+   *
+   * @return array
+   */
+  public static function getDefaultErrorsToSuppress() {
+    return array(
+      '#REF!',  // Invalid cell reference
+      '#####',  // Railroad tracks (negative value for date)
+      '#NULL!', // Null Error Message
+      '#DIV/0!',// Divide by Zero Error Message
+      '#NAME?', // Formula Error
+      '#N/A',   // Not a number
+      '#NUM!',  // Returns value is bigger than what excel can represent
+      '#VALUE!',// Use text arguments when numeric expected
+    );
   }
 
   /**
@@ -258,8 +296,26 @@ class Excel2007Source extends MigrateSource {
    */
   public function performRewind() {
     $this->rows = $this->xlsDoc->rows($this->sheetNumber);
+    $this->suppressExcelErrors();
     $this->rowNumber = $this->headerRows;
     $this->previousRow = new stdClass;
+  }
+
+  /**
+   * Suppress all errors from currently loaded sheet
+   */
+  protected function suppressExcelErrors() {
+    if (empty($this->excelErrorsToSuppress)) {
+      return;
+    }
+
+    foreach($this->rows as $row_key => $row_cells) {
+      foreach($row_cells as $cell_key => $cell_value) {
+        if (in_array($cell_value, $this->excelErrorsToSuppress)) {
+          $this->rows[$row_key][$cell_key] = null;
+        }
+      }
+    }
   }
 
   /**
