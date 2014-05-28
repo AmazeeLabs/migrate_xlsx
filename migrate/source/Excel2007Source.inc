@@ -250,7 +250,7 @@ class Excel2007Source extends MigrateSource {
   }
 
   public function computeCount() {
-    $empty_rows = 0; // This value will be substracted from the total
+    $empty_rows = 0; // This value will be subtracted from the total
                      // along with rows declared as header
 
     try {
@@ -413,19 +413,19 @@ class Excel2007Source extends MigrateSource {
   }
 
   /**
-   * Checks if a cell is no empty
+   * Checks if a cell is not empty
    *
    * @param mixed $cell
    *  Cell content
    *
    * @return bool
    *  TRUE if the cell contains a value or FALSE if cell contains nothing,
-   *  white spaces only of NA() / #N/A value
+   *  white spaces only or an Excel error
    */
   private function notEmptyCell($cell) {
     // Not available should be returned as empty
-    if ($cell == '#N/A') {
-      return true;
+    if (in_array($cell, $this->excelErrorsToSuppress)) {
+      return false;
     }
     $c = trim($cell);
     return !empty($c);
